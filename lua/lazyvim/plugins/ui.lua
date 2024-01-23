@@ -64,6 +64,9 @@ return {
       { "<leader>bo", "<Cmd>BufferLineCloseOthers<CR>", desc = "Delete other buffers" },
       { "<leader>br", "<Cmd>BufferLineCloseRight<CR>", desc = "Delete buffers to the right" },
       { "<leader>bl", "<Cmd>BufferLineCloseLeft<CR>", desc = "Delete buffers to the left" },
+      { "<leader>b,", "<Cmd>BufferLineMovePrev<CR>", desc = "Move buffer to the left" },
+      { "<leader>b.", "<Cmd>BufferLineMoveNext<CR>", desc = "Move buffer to the right" },
+      { "<leader>bs", "<Cmd>BufferLinePick<CR>", desc = "Pick buffer" },
       { "<S-h>", "<cmd>BufferLineCyclePrev<cr>", desc = "Prev buffer" },
       { "<S-l>", "<cmd>BufferLineCycleNext<cr>", desc = "Next buffer" },
       { "[b", "<cmd>BufferLineCyclePrev<cr>", desc = "Prev buffer" },
@@ -222,10 +225,7 @@ return {
     "lukas-reineke/indent-blankline.nvim",
     event = "LazyFile",
     opts = {
-      indent = {
-        char = "▏",
-        tab_char = "▏",
-      },
+      indent = { char = "▏", tab_char = "▏" },
       scope = { enabled = false },
       exclude = {
         filetypes = {

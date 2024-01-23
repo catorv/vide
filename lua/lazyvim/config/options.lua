@@ -65,6 +65,13 @@ opt.fillchars = {
   foldsep = " ",
   diff = "╱",
   eob = " ",
+  horiz = "─",
+  horizup = "─",
+  horizdown = "─",
+  vert = "▏",
+  vertleft = "▏",
+  vertright = "▏",
+  verthoriz = "▏",
 }
 
 if vim.fn.has("nvim-0.10") == 1 then

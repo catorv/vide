@@ -42,6 +42,12 @@ return {
           nested_top = "│ ",
           whitespace = "  ",
         },
+        nav = {
+          preview = true,
+          keymaps = {
+            ["q"] = "actions.close",
+          },
+        },
       }
       return opts
     end,

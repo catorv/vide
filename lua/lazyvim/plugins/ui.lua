@@ -91,6 +91,10 @@ return {
             text_align = "left",
           },
         },
+        show_buffer_icons = false,
+        show_buffer_close_icons = false,
+        indicator = { style = "underline" },
+        tab_size = 0,
       },
     },
     config = function(_, opts)
@@ -134,6 +138,8 @@ return {
           theme = "auto",
           globalstatus = true,
           disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
+          component_separators = "┊",
+          section_separators = { left = "", right = "" },
         },
         sections = {
           lualine_a = { "mode" },
@@ -217,8 +223,8 @@ return {
     event = "LazyFile",
     opts = {
       indent = {
-        char = "│",
-        tab_char = "│",
+        char = "▏",
+        tab_char = "▏",
       },
       scope = { enabled = false },
       exclude = {
@@ -248,8 +254,7 @@ return {
     version = false, -- wait till new 0.7.0 release to put it back on semver
     event = "LazyFile",
     opts = {
-      -- symbol = "▏",
-      symbol = "│",
+      symbol = "▏",
       options = { try_as_border = true },
     },
     init = function()
@@ -351,17 +356,6 @@ return {
     "nvimdev/dashboard-nvim",
     event = "VimEnter",
     opts = function()
-      local logo = [[
-           ██╗      █████╗ ███████╗██╗   ██╗██╗   ██╗██╗███╗   ███╗          Z
-           ██║     ██╔══██╗╚══███╔╝╚██╗ ██╔╝██║   ██║██║████╗ ████║      Z    
-           ██║     ███████║  ███╔╝  ╚████╔╝ ██║   ██║██║██╔████╔██║   z       
-           ██║     ██╔══██║ ███╔╝    ╚██╔╝  ╚██╗ ██╔╝██║██║╚██╔╝██║ z         
-           ███████╗██║  ██║███████╗   ██║    ╚████╔╝ ██║██║ ╚═╝ ██║           
-           ╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝     ╚═══╝  ╚═╝╚═╝     ╚═╝           
-      ]]
-
-      logo = string.rep("\n", 8) .. logo .. "\n\n"
-
       local opts = {
         theme = "doom",
         hide = {
@@ -370,7 +364,21 @@ return {
           statusline = false,
         },
         config = {
-          header = vim.split(logo, "\n"),
+          -- header = vim.split(logo, "\n"),
+          header = {
+            [[ ]],
+            [[ ]],
+            [[     ▄▇██▇▄   ▂▃     ▄▅▆█████▓ ▒▇███▆▃  ▆█▀██▆▂  ▅▇▒   █▓ ▓▇███▀ ▓▇███▀]],
+            [[    ▒██▀ ▀█ ▒▇███▄   ▓  ██▒ ▓▒▒██▒  ██▒▓██ ▒ ██▒▓██░  ▃█▒ ▓█░ ▂  ▓█░ ▂ ]],
+            [[    ▒▓█    ▄▒██  ▀█▄ ▒ ▓██░ ▒░▒██░  ██▒▓██ ░▄█ ▒ ▓██  █▒░ ▒█▆█▀  ▒█▆█▀ ]],
+            [[    ▒▓▓▄ ▄██░██▄▄▄▄██░ ▓██▓ ░ ▒██  ▁██░▒██▀▀█▄    ▒██▃█░░ ▒▓█░ ▂ ▒▓█░ ▂]],
+            [[    ▒ ▓███▀ ▒▓█   ▓██  ▒██▒ ░ ░▀████▓▒░░██▓ ▒█▇▒   ▒▀█▓  ▒░▒█▆█▀▒░▒█▆█▀]],
+            [[    ░ ░▒ ▒  ░▒▒   ▓▒█  ▒ ░░   ░ ▒░▒░▒░ ░ ▒▓ ░▒▓░   ░ ▐▒  ░░░ ▒░ ░░░ ▒░ ]],
+            [[      ░  ▒  ░ ░   ▒▒     ░      ░ ▒ ▒░   ░▒ ░ ▒    ░ ░░  ░ ░ ░  ░ ░ ░ ░]],
+            [[    ░         ░   ▒    ░      ░ ░ ░ ▒    ░░   ░      ░░      ░      ░ ░]],
+            [[    ░ ░           ░               ░ ░     ░           ░  ░   ░      ░  ]],
+            [[ ]],
+          },
           -- stylua: ignore
           center = {
             { action = "Telescope find_files",                                     desc = " Find file",       icon = " ", key = "f" },

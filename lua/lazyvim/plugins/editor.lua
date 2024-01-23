@@ -55,12 +55,20 @@ return {
       open_files_do_not_replace_types = { "terminal", "Trouble", "trouble", "qf", "Outline" },
       filesystem = {
         bind_to_cwd = false,
-        follow_current_file = { enabled = true },
+        follow_current_file = {
+          enabled = true,
+          leave_dirs_open = true,
+        },
+        group_empty_dirs = true,
         use_libuv_file_watcher = true,
       },
       window = {
+        width = 30,
         mappings = {
           ["<space>"] = "none",
+          ["S"] = "split_with_window_picker",
+          ["s"] = "vsplit_with_window_picker",
+          ["<Tab>"] = { "toggle_preview", config = { use_float = true, use_image_nvim = true } },
         },
       },
       default_component_configs = {
@@ -91,6 +99,68 @@ return {
             require("neo-tree.sources.git_status").refresh()
           end
         end,
+      })
+    end,
+  },
+
+  {
+    "s1n7ax/nvim-window-picker",
+    event = "VeryLazy",
+    version = "2.*",
+    keys = {
+      {
+        "<leader>we",
+        function()
+          local picked_window_id = require("window-picker").pick_window({
+            filter_rules = {
+              include_current_win = true,
+              bo = {
+                filetype = { "notify" },
+                buftype = {},
+              },
+            },
+          })
+          if picked_window_id then
+            vim.api.nvim_set_current_win(picked_window_id)
+          end
+        end,
+        desc = "Pick Window",
+      },
+      {
+        "gw",
+        function()
+          local picked_window_id = require("window-picker").pick_window({
+            filter_rules = {
+              include_current_win = true,
+              bo = {
+                filetype = { "notify" },
+                buftype = {},
+              },
+            },
+          })
+          if picked_window_id then
+            vim.api.nvim_set_current_win(picked_window_id)
+          end
+        end,
+        desc = "Pick Window",
+      },
+    },
+    config = function()
+      require("window-picker").setup({
+        hint = "floating-big-letter",
+        selection_chars = "JKLMNUIOHYFDSAGTREWQBVCXZ",
+        show_prompt = false,
+        filter_rules = {
+          include_current_win = false,
+          autoselect_one = true,
+          -- filter using buffer options
+          bo = {
+            -- if the file type is one of following, the window will be ignored
+            filetype = { "neo-tree", "neo-tree-popup", "notify" },
+            -- if the buffer type is one of following, the window will be ignored
+            buftype = { "terminal", "quickfix" },
+          },
+        },
       })
     end,
   },
@@ -138,6 +208,7 @@ return {
       { "<leader><space>", Util.telescope("files"), desc = "Find Files (root dir)" },
       -- find
       { "<leader>fb", "<cmd>Telescope buffers sort_mru=true sort_lastused=true<cr>", desc = "Buffers" },
+      { "gb", "<cmd>Telescope buffers sort_mru=true sort_lastused=true<cr>", desc = "Buffers" },
       { "<leader>fc", Util.telescope.config_files(), desc = "Find Config File" },
       { "<leader>ff", Util.telescope("files"), desc = "Find Files (root dir)" },
       { "<leader>fF", Util.telescope("files", { cwd = false }), desc = "Find Files (cwd)" },
@@ -232,8 +303,8 @@ return {
               ["<a-h>"] = find_files_with_hidden,
               ["<C-Down>"] = actions.cycle_history_next,
               ["<C-Up>"] = actions.cycle_history_prev,
-              ["<C-f>"] = actions.preview_scrolling_down,
-              ["<C-b>"] = actions.preview_scrolling_up,
+              -- ["<C-f>"] = actions.preview_scrolling_down,
+              -- ["<C-b>"] = actions.preview_scrolling_up,
             },
             n = {
               ["q"] = actions.close,
@@ -338,10 +409,12 @@ return {
       signs = {
         add = { text = "▎" },
         change = { text = "▎" },
-        delete = { text = "" },
-        topdelete = { text = "" },
-        changedelete = { text = "▎" },
-        untracked = { text = "▎" },
+        -- delete = { text = "" },
+        -- topdelete = { text = "" },
+        -- changedelete = { text = "▎" },
+        changedelete = { text = "±" },
+        -- untracked = { text = "▎" },
+        untracked = { text = "┊" },
       },
       on_attach = function(buffer)
         local gs = package.loaded.gitsigns

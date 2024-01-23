@@ -15,11 +15,12 @@ return {
     end,
     opts = function()
       return {
-        separator = " ",
-        highlight = true,
+        separator = " › ",
         depth_limit = 5,
+        depth_limit_indicator = require("lazyvim.config").icons.misc.dots,
         icons = require("lazyvim.config").icons.kinds,
         lazy_update_context = true,
+        click = true,
       }
     end,
   },

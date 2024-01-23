@@ -69,6 +69,11 @@ return {
           ["S"] = "split_with_window_picker",
           ["s"] = "vsplit_with_window_picker",
           ["<Tab>"] = { "toggle_preview", config = { use_float = true, use_image_nvim = true } },
+          ["Y"] = function(state)
+            local node = state.tree:get_node()
+            local path = node:get_id()
+            vim.fn.setreg("+", path, "c")
+          end,
         },
       },
       default_component_configs = {
@@ -212,6 +217,7 @@ return {
       { "<leader>fc", Util.telescope.config_files(), desc = "Find Config File" },
       { "<leader>ff", Util.telescope("files"), desc = "Find Files (root dir)" },
       { "<leader>fF", Util.telescope("files", { cwd = false }), desc = "Find Files (cwd)" },
+      { "<leader>fg", "<cmd>Telescope git_files<cr>", desc = "Find Files (git-files)" },
       { "<leader>fr", "<cmd>Telescope oldfiles<cr>", desc = "Recent" },
       { "<leader>fR", Util.telescope("oldfiles", { cwd = vim.loop.cwd() }), desc = "Recent (cwd)" },
       -- git
@@ -431,7 +437,7 @@ return {
         map("n", "<leader>ghS", gs.stage_buffer, "Stage Buffer")
         map("n", "<leader>ghu", gs.undo_stage_hunk, "Undo Stage Hunk")
         map("n", "<leader>ghR", gs.reset_buffer, "Reset Buffer")
-        map("n", "<leader>ghp", gs.preview_hunk, "Preview Hunk")
+        map("n", "<leader>ghp", gs.preview_hunk_inline, "Preview Hunk Inline")
         map("n", "<leader>ghb", function() gs.blame_line({ full = true }) end, "Blame Line")
         map("n", "<leader>ghd", gs.diffthis, "Diff This")
         map("n", "<leader>ghD", function() gs.diffthis("~") end, "Diff This ~")

@@ -85,7 +85,7 @@ return {
       },
       setup = {
         clangd = function(_, opts)
-          local clangd_ext_opts = require("lazyvim.util").opts("clangd_extensions.nvim")
+          local clangd_ext_opts = LazyVim.opts("clangd_extensions.nvim")
           require("clangd_extensions").setup(vim.tbl_deep_extend("force", clangd_ext_opts or {}, { server = opts }))
           return false
         end,
@@ -144,7 +144,7 @@ return {
             type = "codelldb",
             request = "attach",
             name = "Attach to process",
-            processId = require("dap.utils").pick_process,
+            pid = require("dap.utils").pick_process,
             cwd = "${workspaceFolder}",
           },
         }

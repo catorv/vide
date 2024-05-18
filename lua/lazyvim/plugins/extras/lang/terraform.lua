@@ -1,9 +1,3 @@
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "hcl", "terraform" },
-  desc = "terraform/hcl commentstring configuration",
-  command = "setlocal commentstring=#\\ %s",
-})
-
 return {
   {
     "nvim-treesitter/nvim-treesitter",
@@ -23,6 +17,14 @@ return {
         terraformls = {},
       },
     },
+  },
+  -- ensure terraform tools are installed
+  {
+    "williamboman/mason.nvim",
+    opts = function(_, opts)
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, { "tflint" })
+    end,
   },
   {
     "nvimtools/none-ls.nvim",
@@ -53,6 +55,27 @@ return {
         terraform = { "terraform_fmt" },
         tf = { "terraform_fmt" },
         ["terraform-vars"] = { "terraform_fmt" },
+      },
+    },
+  },
+  {
+    "nvim-telescope/telescope.nvim",
+    dependencies = {
+      {
+        "ANGkeith/telescope-terraform-doc.nvim",
+        config = function()
+          LazyVim.on_load("telescope.nvim", function()
+            require("telescope").load_extension("terraform_doc")
+          end)
+        end,
+      },
+      {
+        "cappyzawa/telescope-terraform.nvim",
+        config = function()
+          LazyVim.on_load("telescope.nvim", function()
+            require("telescope").load_extension("terraform")
+          end)
+        end,
       },
     },
   },

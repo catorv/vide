@@ -1,5 +1,3 @@
-local Util = require("lazyvim.util")
-
 ---@class lazyvim.util.lsp
 local M = {}
 
@@ -23,7 +21,7 @@ function M.get_clients(opts)
   return opts and opts.filter and vim.tbl_filter(opts.filter, ret) or ret
 end
 
----@param on_attach fun(client, buffer)
+---@param on_attach fun(client:lsp.Client, buffer)
 function M.on_attach(on_attach)
   vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(args)
@@ -87,10 +85,10 @@ function M.formatter(opts)
     primary = true,
     priority = 1,
     format = function(buf)
-      M.format(Util.merge(filter, { bufnr = buf }))
+      M.format(LazyVim.merge({}, filter, { bufnr = buf }))
     end,
     sources = function(buf)
-      local clients = M.get_clients(Util.merge(filter, { bufnr = buf }))
+      local clients = M.get_clients(LazyVim.merge({}, filter, { bufnr = buf }))
       ---@param client lsp.Client
       local ret = vim.tbl_filter(function(client)
         return client.supports_method("textDocument/formatting")
@@ -102,23 +100,108 @@ function M.formatter(opts)
       end, ret)
     end,
   }
-  return Util.merge(ret, opts) --[[@as LazyFormatter]]
+  return LazyVim.merge(ret, opts) --[[@as LazyFormatter]]
 end
 
 ---@alias lsp.Client.format {timeout_ms?: number, format_options?: table} | lsp.Client.filter
 
 ---@param opts? lsp.Client.format
 function M.format(opts)
-  opts = vim.tbl_deep_extend("force", {}, opts or {}, require("lazyvim.util").opts("nvim-lspconfig").format or {})
+  opts = vim.tbl_deep_extend(
+    "force",
+    {},
+    opts or {},
+    LazyVim.opts("nvim-lspconfig").format or {},
+    LazyVim.opts("conform.nvim").format or {}
+  )
   local ok, conform = pcall(require, "conform")
   -- use conform for formatting with LSP when available,
   -- since it has better format diffing
   if ok then
     opts.formatters = {}
-    opts.lsp_fallback = true
     conform.format(opts)
   else
     vim.lsp.buf.format(opts)
+  end
+end
+
+---@alias LspWord {from:{[1]:number, [2]:number}, to:{[1]:number, [2]:number}, current?:boolean} 1-0 indexed
+M.words = {}
+M.words.ns = vim.api.nvim_create_namespace("vim_lsp_references")
+
+---@param opts? {enabled?: boolean}
+function M.words.setup(opts)
+  opts = opts or {}
+  if not opts.enabled then
+    return
+  end
+  local handler = vim.lsp.handlers["textDocument/documentHighlight"]
+  vim.lsp.handlers["textDocument/documentHighlight"] = function(err, result, ctx, config)
+    if not vim.api.nvim_buf_is_loaded(ctx.bufnr) then
+      return
+    end
+    return handler(err, result, ctx, config)
+  end
+
+  M.on_attach(function(client, buf)
+    if client.supports_method("textDocument/documentHighlight") then
+      vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI", "CursorMoved", "CursorMovedI" }, {
+        group = vim.api.nvim_create_augroup("lsp_word_" .. buf, { clear = true }),
+        buffer = buf,
+        callback = function(ev)
+          if not M.words.at() then
+            if ev.event:find("CursorMoved") then
+              vim.lsp.buf.clear_references()
+            else
+              vim.lsp.buf.document_highlight()
+            end
+          end
+        end,
+      })
+      vim.keymap.set("n", "]]", function()
+        M.words.jump(vim.v.count1)
+      end, { buffer = buf, desc = "Next reference" })
+      vim.keymap.set("n", "[[", function()
+        M.words.jump(-vim.v.count1)
+      end, { buffer = buf, desc = "Previous reference" })
+    end
+  end)
+end
+
+---@return LspWord[]
+function M.words.get()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  return vim.tbl_map(function(extmark)
+    local ret = {
+      from = { extmark[2] + 1, extmark[3] },
+      to = { extmark[4].end_row + 1, extmark[4].end_col },
+    }
+    if cursor[1] >= ret.from[1] and cursor[1] <= ret.to[1] and cursor[2] >= ret.from[2] and cursor[2] <= ret.to[2] then
+      ret.current = true
+    end
+    return ret
+  end, vim.api.nvim_buf_get_extmarks(0, M.words.ns, 0, -1, { details = true }))
+end
+
+---@param words? LspWord[]
+---@return LspWord?, number?
+function M.words.at(words)
+  for idx, word in ipairs(words or M.words.get()) do
+    if word.current then
+      return word, idx
+    end
+  end
+end
+
+function M.words.jump(count)
+  local words = M.words.get()
+  local _, idx = M.words.at(words)
+  if not idx then
+    return
+  end
+  local target = words[idx + count]
+  if target then
+    vim.api.nvim_win_set_cursor(0, target.from)
   end
 end
 

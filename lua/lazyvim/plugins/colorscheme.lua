@@ -10,8 +10,9 @@ return {
       },
       overrides = {
         ColorColumn = { bg = "#2E2E2E" },
-        IblIndent = { fg = "#2E2E2E" },
-        MiniIndentscopeSymbol = { fg = "#504945" },
+        -- IblIndent = { fg = "#2E2E2E" },
+        IblIndent = { fg = "#404040" },
+        MiniIndentscopeSymbol = { fg = "#666666" },
         NeoTreeNormal = { fg = "#ebdbb2", bg = "#2C2825" },
         NeoTreeNormalNC = { fg = "#ebdbb2", bg = "#2C2825" },
         NeoTreeCursorLine = { bg = "#0C0F10" },

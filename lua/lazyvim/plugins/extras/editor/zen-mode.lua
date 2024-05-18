@@ -4,6 +4,9 @@ return {
     "folke/zen-mode.nvim",
     event = "VeryLazy",
     opts = {
+      window = {
+        width = 130,
+      },
       plugins = {
         gitsigns = { enabled = false },
       },

@@ -16,7 +16,7 @@ return {
     opts = function()
       return {
         separator = " › ",
-	highlight = true,
+        -- highlight = true,
         depth_limit = 5,
         icons = LazyVim.config.icons.kinds,
         lazy_update_context = true,

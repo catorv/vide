@@ -36,3 +36,30 @@ if vim.g.neovide then
   vim.api.nvim_set_keymap("t", "<D-v>", "<C-R>+", { noremap = true, silent = true })
   vim.api.nvim_set_keymap("v", "<D-v>", "<C-R>+", { noremap = true, silent = true })
 end
+
+local function unlist_current_buffer()
+  vim.bo.buflisted = false
+  if vim.o.buftype == "terminal" then
+    vim.bo.swapfile = false
+    local buf = vim.api.nvim_get_current_buf()
+    vim.api.nvim_create_autocmd("TermClose", {
+      buffer = buf,
+      command = "if &buftype == 'terminal' | close | endif",
+    })
+  end
+end
+
+-- Open new terminal window below the currnt window
+vim.api.nvim_create_user_command("TerminalBelow", function()
+  vim.cmd("belowright split | terminal")
+  unlist_current_buffer()
+  local win = vim.api.nvim_get_current_win()
+  vim.api.nvim_set_option_value("cursorline", false, { win = win })
+  vim.api.nvim_set_option_value("number", false, { win = win })
+  vim.api.nvim_set_option_value("relativenumber", false, { win = win })
+  vim.cmd("startinsert")
+end, {})
+
+vim.api.nvim_create_user_command("UnlistCurrentBuffer", function()
+  unlist_current_buffer()
+end, {})

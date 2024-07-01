@@ -5,7 +5,7 @@ return {
     event = "VeryLazy",
     opts = {
       window = {
-        width = 130,
+        width = 180,
       },
       plugins = {
         gitsigns = { enabled = false },

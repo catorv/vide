@@ -1,9 +1,51 @@
 # What's new?
 
+## 12.x
+
+- This **news** is now also available on the website at [https://www.lazyvim.org/news](https://www.lazyvim.org/news)
+
+- **prettier** extra now works for all prettier supported filetypes
+  and will be enabled for astro/svelte extra if you have a proper
+  config file with the correct prettier plugin
+
+- **New Language Support:** SQL, Clojure, Thrift, Elm, Gleam, Angular,
+  NuShell, Svelte, Kotlin, Astro, Toml and PHP
+
+- **New Extras:** `copilot-chat`, `git`, `octo`, `inc-rename` and `neogen`
+
+- The **typescript** extra now uses `vtsls` instead of `tsserver`
+
+- **Neovim >= 0.10** now uses the much faster [lazydev.nvim](https://github.com/folke/lazydev.nvim)
+  instead of `neodev.nvim`
+
+- moved `neoconf.nvim` to extras. Project specific LSP settings
+  can be done with a `.lazy.lua` file instead.
+
 ## 11.x
 
+- **Keymaps:**
+
+  - `<leader>gB` to open the current repo in the browser
+  - `gco` and `gcO` to add a comment below or above the current line
+  - `<leader>wm` to toggle window maximize
+
+- **lazydev.nvim:** faster alternative to `neodev.nvim`
+
+- **Options:** Added `linebreak=true` to default options.
+
+- `mini.ai` is back as a default plugin! Removing it was a mistake.
+  It's a great plugin that enhances the native text objects.
+
+- `:LazyExtras` now has multiple new sections:
+
+  - **Enabled**: extras that are currently enabled
+  - **Recommended Languages**: language extras recommended for the current buffer / directory
+  - **Recommended Plugins**: extras that are recommended for most users
+  - **Plugins**: other plugin extras
+  - **Languages**: other language extras
+
 - new option `vim.g.deprecation_warnings` to disable deprecation warnings
-  Defaults to `false`. To disable, set it to `true` in your `options.lua`
+  Defaults to `false`. To enable deprecation warnings, set it to `true` in your `options.lua`
 
 - `vim-illuminate` move to extras
   Document highlights now use native lsp functionality by default
@@ -34,7 +76,6 @@ Additionally, some core plugins have been moved to extras.
 
 - plugins moved to extras:
 
-  - `mini.ai` which I couldn't live without, but not everyone needs it
   - `mini.surround`
   - `mini.indentscope` scopes are now also highlighted with `indent-blankline`
   - `nvim-treesitter-context`

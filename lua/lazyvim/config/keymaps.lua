@@ -75,6 +75,10 @@ map("n", "<leader>K", "<cmd>norm! K<cr>", { desc = "Keywordprg" })
 map("v", "<", "<gv")
 map("v", ">", ">gv")
 
+-- commenting
+map("n", "gco", "o<esc>Vcx<esc><cmd>normal gcc<cr>fxa<bs>", { desc = "Add Comment Below" })
+map("n", "gcO", "O<esc>Vcx<esc><cmd>normal gcc<cr>fxa<bs>", { desc = "Add Comment Above" })
+
 -- lazy
 map("n", "<leader>l", "<cmd>Lazy<cr>", { desc = "Lazy" })
 
@@ -130,11 +134,19 @@ map("n", "<leader>ub", function() LazyVim.toggle("background", false, {"light", 
 map("n", "<leader>gg", function() LazyVim.lazygit( { cwd = LazyVim.root.git() }) end, { desc = "Lazygit (Root Dir)" })
 map("n", "<leader>gG", function() LazyVim.lazygit() end, { desc = "Lazygit (cwd)" })
 map("n", "<leader>gb", LazyVim.lazygit.blame_line, { desc = "Git Blame Line" })
+map("n", "<leader>gB", LazyVim.lazygit.browse, { desc = "Git Browse" })
 
 map("n", "<leader>gf", function()
   local git_path = vim.api.nvim_buf_get_name(0)
   LazyVim.lazygit({args = { "-f", vim.trim(git_path) }})
 end, { desc = "Lazygit Current File History" })
+
+map("n", "<leader>gl", function()
+  LazyVim.lazygit({ args = { "log" }, cwd = LazyVim.root.git() })
+end, { desc = "Lazygit Log" })
+map("n", "<leader>gL", function()
+  LazyVim.lazygit({ args = { "log" } })
+end, { desc = "Lazygit Log (cwd)" })
 
 -- quit
 map("n", "<leader>qq", "<cmd>qa<cr>", { desc = "Quit All" })
@@ -169,9 +181,11 @@ map("n", "<leader>w-", "<C-W>s", { desc = "Split Window Below", remap = true })
 map("n", "<leader>w|", "<C-W>v", { desc = "Split Window Right", remap = true })
 map("n", "<leader>-", "<C-W>s", { desc = "Split Window Below", remap = true })
 map("n", "<leader>|", "<C-W>v", { desc = "Split Window Right", remap = true })
+map("n", "<leader>wm", function() LazyVim.toggle.maximize() end, { desc = "Maximize Toggle" })
 
 -- tabs
 map("n", "<leader><tab>l", "<cmd>tablast<cr>", { desc = "Last Tab" })
+map("n", "<leader><tab>o", "<cmd>tabonly<cr>", { desc = "Close Other Tabs" })
 map("n", "<leader><tab>f", "<cmd>tabfirst<cr>", { desc = "First Tab" })
 map("n", "<leader><tab><tab>", "<cmd>tabnew<cr>", { desc = "New Tab" })
 map("n", "<leader><tab>]", "<cmd>tabnext<cr>", { desc = "Next Tab" })

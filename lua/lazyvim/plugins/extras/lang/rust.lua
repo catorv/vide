@@ -1,4 +1,10 @@
 return {
+  recommended = function()
+    return LazyVim.extras.wants({
+      ft = "rust",
+      root = { "Cargo.toml", "rust-project.json" },
+    })
+  end,
 
   -- Extend auto completion
   {
@@ -24,20 +30,14 @@ return {
   -- Add Rust & related to treesitter
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = function(_, opts)
-      opts.ensure_installed = opts.ensure_installed or {}
-      vim.list_extend(opts.ensure_installed, { "ron", "rust", "toml" })
-    end,
+    opts = { ensure_installed = { "rust", "ron" } },
   },
 
   -- Ensure Rust debugger is installed
   {
     "williamboman/mason.nvim",
     optional = true,
-    opts = function(_, opts)
-      opts.ensure_installed = opts.ensure_installed or {}
-      vim.list_extend(opts.ensure_installed, { "codelldb" })
-    end,
+    opts = { ensure_installed = { "codelldb" } },
   },
 
   {
@@ -65,11 +65,7 @@ return {
               },
             },
             -- Add clippy lints for Rust.
-            checkOnSave = {
-              allFeatures = true,
-              command = "clippy",
-              extraArgs = { "--no-deps" },
-            },
+            checkOnSave = true,
             procMacro = {
               enable = true,
               ignored = {
@@ -84,6 +80,12 @@ return {
     },
     config = function(_, opts)
       vim.g.rustaceanvim = vim.tbl_deep_extend("keep", vim.g.rustaceanvim or {}, opts or {})
+      if vim.fn.executable("rust-analyzer") == 0 then
+        LazyVim.error(
+          "**rust-analyzer** not found in PATH, please install it.\nhttps://rust-analyzer.github.io/",
+          { title = "rustaceanvim" }
+        )
+      end
     end,
   },
 
@@ -92,7 +94,6 @@ return {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
-        rust_analyzer = {},
         taplo = {
           keys = {
             {
@@ -109,22 +110,16 @@ return {
           },
         },
       },
-      setup = {
-        rust_analyzer = function()
-          return true
-        end,
-      },
     },
   },
 
   {
     "nvim-neotest/neotest",
     optional = true,
-    opts = function(_, opts)
-      opts.adapters = opts.adapters or {}
-      vim.list_extend(opts.adapters, {
-        require("rustaceanvim.neotest"),
-      })
-    end,
+    opts = {
+      adapters = {
+        ["rustaceanvim.neotest"] = {},
+      },
+    },
   },
 }

@@ -3,7 +3,7 @@ _G.LazyVim = require("lazyvim.util")
 ---@class LazyVimConfig: LazyVimOptions
 local M = {}
 
-M.version = "10.21.1" -- x-release-please-version
+M.version = "12.22.1" -- x-release-please-version
 LazyVim.config = M
 
 ---@class LazyVimOptions
@@ -32,6 +32,9 @@ local defaults = {
   icons = {
     misc = {
       dots = "󰇘",
+    },
+    ft = {
+      octo = "",
     },
     dap = {
       Stopped             = { "󰁕 ", "DiagnosticWarn", "DapStoppedLine" },
@@ -132,7 +135,8 @@ local defaults = {
 }
 
 M.json = {
-  version = 3,
+  version = 6,
+  path = vim.g.lazyvim_json or vim.fn.stdpath("config") .. "/lazyvim.json",
   data = {
     version = nil, ---@type string?
     news = {}, ---@type table<string, string>
@@ -141,8 +145,7 @@ M.json = {
 }
 
 function M.json.load()
-  local path = vim.fn.stdpath("config") .. "/lazyvim.json"
-  local f = io.open(path, "r")
+  local f = io.open(M.json.path, "r")
   if f then
     local data = f:read("*a")
     f:close()
@@ -191,6 +194,13 @@ function M.setup(opts)
         vim.cmd([[Lazy! load all]])
         vim.cmd([[checkhealth]])
       end, { desc = "Load all plugins and run :checkhealth" })
+
+      local health = require("lazy.health")
+      vim.list_extend(health.valid, {
+        "recommended",
+        "desc",
+        "vscode",
+      })
     end,
   })
 

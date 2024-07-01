@@ -34,24 +34,6 @@ return {
     end,
   },
 
-  -- better vim.ui
-  {
-    "stevearc/dressing.nvim",
-    lazy = true,
-    init = function()
-      ---@diagnostic disable-next-line: duplicate-set-field
-      vim.ui.select = function(...)
-        require("lazy").load({ plugins = { "dressing.nvim" } })
-        return vim.ui.select(...)
-      end
-      ---@diagnostic disable-next-line: duplicate-set-field
-      vim.ui.input = function(...)
-        require("lazy").load({ plugins = { "dressing.nvim" } })
-        return vim.ui.input(...)
-      end
-    end,
-  },
-
   -- This is what powers LazyVim's fancy-looking
   -- tabs, which include filetype icons and close buttons.
   {
@@ -70,6 +52,8 @@ return {
       { "<S-l>", "<cmd>BufferLineCycleNext<cr>", desc = "Next Buffer" },
       { "[b", "<cmd>BufferLineCyclePrev<cr>", desc = "Prev Buffer" },
       { "]b", "<cmd>BufferLineCycleNext<cr>", desc = "Next Buffer" },
+      { "[B", "<cmd>BufferLineMovePrev<cr>", desc = "Move buffer prev" },
+      { "]B", "<cmd>BufferLineMoveNext<cr>", desc = "Move buffer next" },
     },
     opts = {
       options = {
@@ -80,7 +64,7 @@ return {
         diagnostics = "nvim_lsp",
         always_show_bufferline = false,
         diagnostics_indicator = function(_, _, diag)
-          local icons = require("lazyvim.config").icons.diagnostics
+          local icons = LazyVim.config.icons.diagnostics
           local ret = (diag.error and icons.Error .. diag.error .. " " or "")
             .. (diag.warning and icons.Warn .. diag.warning or "")
           return vim.trim(ret)
@@ -97,6 +81,10 @@ return {
         show_buffer_close_icons = false,
         indicator = { style = "underline" },
         tab_size = 0,
+        ---@param opts bufferline.IconFetcherOpts
+        get_element_icon = function(opts)
+          return LazyVim.config.icons.ft[opts.filetype]
+        end,
       },
     },
     config = function(_, opts)
@@ -131,14 +119,14 @@ return {
       local lualine_require = require("lualine_require")
       lualine_require.require = require
 
-      local icons = require("lazyvim.config").icons
+      local icons = LazyVim.config.icons
 
       vim.o.laststatus = vim.g.lualine_laststatus
 
-      return {
+      local opts = {
         options = {
           theme = "auto",
-          globalstatus = true,
+          globalstatus = vim.o.laststatus == 3,
           disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
           -- component_separators = "┊",
           component_separators = { left = "", right = "" },
@@ -168,24 +156,25 @@ return {
             {
               function() return require("noice").api.status.command.get() end,
               cond = function() return package.loaded["noice"] and require("noice").api.status.command.has() end,
-              color = LazyVim.ui.fg("Statement"),
+              color = function() return LazyVim.ui.fg("Statement") end,
             },
             -- stylua: ignore
             {
               function() return require("noice").api.status.mode.get() end,
               cond = function() return package.loaded["noice"] and require("noice").api.status.mode.has() end,
-              color = LazyVim.ui.fg("Constant"),
+              color = function() return LazyVim.ui.fg("Constant") end,
             },
             -- stylua: ignore
             {
               function() return "  " .. require("dap").status() end,
-              cond = function () return package.loaded["dap"] and require("dap").status() ~= "" end,
-              color = LazyVim.ui.fg("Debug"),
+              cond = function() return package.loaded["dap"] and require("dap").status() ~= "" end,
+              color = function() return LazyVim.ui.fg("Debug") end,
             },
+            -- stylua: ignore
             {
               require("lazy.status").updates,
               cond = require("lazy.status").has_updates,
-              color = LazyVim.ui.fg("Special"),
+              color = function() return LazyVim.ui.fg("Special") end,
             },
             {
               "diff",
@@ -218,6 +207,26 @@ return {
         },
         extensions = { "neo-tree", "lazy" },
       }
+
+      -- do not add trouble symbols if aerial is enabled
+      if vim.g.trouble_lualine then
+        local trouble = require("trouble")
+        local symbols = trouble.statusline
+          and trouble.statusline({
+            mode = "symbols",
+            groups = {},
+            title = false,
+            filter = { range = true },
+            format = "{kind_icon}{symbol.name:Normal}",
+            hl_group = "lualine_c_normal",
+          })
+        table.insert(opts.sections.lualine_c, {
+          symbols and symbols.get,
+          cond = symbols and symbols.has,
+        })
+      end
+
+      return opts
     end,
   },
 
@@ -245,23 +254,6 @@ return {
       },
     },
     main = "ibl",
-    config = function(_, opts)
-      if vim.fn.has("nvim-0.10.0") == 0 then
-        local utils = require("ibl.utils")
-        utils.tbl_join = vim.tbl_flatten
-      end
-      require("ibl").setup(opts)
-    end,
-  },
-
-  -- Displays a popup with possible key bindings of the command you started typing
-  {
-    "folke/which-key.nvim",
-    opts = function(_, opts)
-      if LazyVim.has("noice.nvim") then
-        opts.defaults["<leader>sn"] = { name = "+noice" }
-      end
-    end,
   },
 
   -- Highly experimental plugin that completely replaces the UI for messages, cmdline and the popupmenu.
@@ -293,20 +285,29 @@ return {
         bottom_search = true,
         command_palette = true,
         long_message_to_split = true,
-        inc_rename = true,
       },
     },
     -- stylua: ignore
     keys = {
+      { "<leader>sn", "", desc = "+noice"},
       { "<S-Enter>", function() require("noice").redirect(vim.fn.getcmdline()) end, mode = "c", desc = "Redirect Cmdline" },
       { "<leader>snl", function() require("noice").cmd("last") end, desc = "Noice Last Message" },
       { "<leader>snh", function() require("noice").cmd("history") end, desc = "Noice History" },
       { "<leader>sna", function() require("noice").cmd("all") end, desc = "Noice All" },
       { "<leader>snd", function() require("noice").cmd("dismiss") end, desc = "Dismiss All" },
-      { "<leader>snt", function() require("noice").cmd("telescope") end, desc = "Noice Telescope" },
+      { "<leader>snt", function() require("noice").cmd("pick") end, desc = "Noice Picker (Telescope/FzfLua)" },
       { "<c-f>", function() if not require("noice.lsp").scroll(4) then return "<c-f>" end end, silent = true, expr = true, desc = "Scroll Forward", mode = {"i", "n", "s"} },
       { "<c-b>", function() if not require("noice.lsp").scroll(-4) then return "<c-b>" end end, silent = true, expr = true, desc = "Scroll Backward", mode = {"i", "n", "s"}},
     },
+    config = function(_, opts)
+      -- HACK: noice shows messages from before it was enabled,
+      -- but this is not ideal when Lazy is installing plugins,
+      -- so clear the messages in this case.
+      if vim.o.filetype == "lazy" then
+        vim.cmd([[messages clear]])
+      end
+      require("noice").setup(opts)
+    end,
   },
 
   -- icons
@@ -314,20 +315,6 @@ return {
 
   -- ui components
   { "MunifTanjim/nui.nvim", lazy = true },
-
-  {
-    "goolord/alpha-nvim",
-    optional = true,
-    enabled = function()
-      LazyVim.warn({
-        "`dashboard.nvim` is now the default LazyVim starter plugin.",
-        "",
-        "To keep using `alpha.nvim`, please enable the `lazyvim.plugins.extras.ui.alpha` extra.",
-        "Or to hide this message, remove the alpha spec from your config.",
-      })
-      return false
-    end,
-  },
 
   {
     "nvimdev/dashboard-nvim",
@@ -358,15 +345,15 @@ return {
           },
           -- stylua: ignore
           center = {
-            { action = LazyVim.telescope("files"),                                    desc = " Find File",       icon = " ", key = "f" },
-            { action = "ene | startinsert",                                        desc = " New File",        icon = " ", key = "n" },
-            { action = "Telescope oldfiles",                                       desc = " Recent Files",    icon = " ", key = "r" },
-            { action = "Telescope live_grep",                                      desc = " Find Text",       icon = " ", key = "g" },
-            { action = [[lua LazyVim.telescope.config_files()()]], desc = " Config",          icon = " ", key = "c" },
-            { action = 'lua require("persistence").load()',                        desc = " Restore Session", icon = " ", key = "s" },
-            { action = "LazyExtras",                                               desc = " Lazy Extras",     icon = " ", key = "x" },
-            { action = "Lazy",                                                     desc = " Lazy",            icon = "󰒲 ", key = "l" },
-            { action = "qa",                                                       desc = " Quit",            icon = " ", key = "q" },
+            { action = 'lua LazyVim.pick()()',                           desc = " Find File",       icon = " ", key = "f" },
+            { action = "ene | startinsert",                              desc = " New File",        icon = " ", key = "n" },
+            { action = 'lua LazyVim.pick("oldfiles")()',                 desc = " Recent Files",    icon = " ", key = "r" },
+            { action = 'lua LazyVim.pick("live_grep")()',                desc = " Find Text",       icon = " ", key = "g" },
+            { action = 'lua LazyVim.pick.config_files()()',              desc = " Config",          icon = " ", key = "c" },
+            { action = 'lua require("persistence").load()',              desc = " Restore Session", icon = " ", key = "s" },
+            { action = "LazyExtras",                                     desc = " Lazy Extras",     icon = " ", key = "x" },
+            { action = "Lazy",                                           desc = " Lazy",            icon = "󰒲 ", key = "l" },
+            { action = function() vim.api.nvim_input("<cmd>qa<cr>") end, desc = " Quit",            icon = " ", key = "q" },
           },
           footer = function()
             local stats = require("lazy").stats()
@@ -381,13 +368,15 @@ return {
         button.key_format = "  %s"
       end
 
-      -- close Lazy and re-open when the dashboard is ready
+      -- open dashboard after closing lazy
       if vim.o.filetype == "lazy" then
-        vim.cmd.close()
-        vim.api.nvim_create_autocmd("User", {
-          pattern = "DashboardLoaded",
+        vim.api.nvim_create_autocmd("WinClosed", {
+          pattern = tostring(vim.api.nvim_get_current_win()),
+          once = true,
           callback = function()
-            require("lazy").show()
+            vim.schedule(function()
+              vim.api.nvim_exec_autocmds("UIEnter", { group = "dashboard" })
+            end)
           end,
         })
       end

@@ -16,13 +16,24 @@ local function extend_or_override(config, custom, ...)
 end
 
 return {
+  recommended = function()
+    return LazyVim.extras.wants({
+      ft = "java",
+      root = {
+        "build.gradle",
+        "build.gradle.kts",
+        "build.xml", -- Ant
+        "pom.xml", -- Maven
+        "settings.gradle", -- Gradle
+        "settings.gradle.kts", -- Gradle
+      },
+    })
+  end,
+
   -- Add java to treesitter.
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = function(_, opts)
-      opts.ensure_installed = opts.ensure_installed or {}
-      vim.list_extend(opts.ensure_installed, { "java" })
-    end,
+    opts = { ensure_installed = { "java" } },
   },
 
   -- Ensure java debugger and test packages are installed.
@@ -32,10 +43,7 @@ return {
     dependencies = {
       {
         "williamboman/mason.nvim",
-        opts = function(_, opts)
-          opts.ensure_installed = opts.ensure_installed or {}
-          vim.list_extend(opts.ensure_installed, { "java-test", "java-debug-adapter" })
-        end,
+        opts = { ensure_installed = { "java-debug-adapter", "java-test" } },
       },
     },
   },
@@ -63,6 +71,8 @@ return {
     dependencies = { "folke/which-key.nvim" },
     ft = java_filetypes,
     opts = function()
+      local mason_registry = require("mason-registry")
+      local lombok_jar = mason_registry.get_package("jdtls"):get_install_path() .. "/lombok.jar"
       return {
         -- How to find the root dir for a given filename. The default comes from
         -- lspconfig which provides a function specifically for java projects.
@@ -83,7 +93,10 @@ return {
 
         -- How to run jdtls. This can be overridden to a full java command-line
         -- if the Python wrapper script doesn't suffice.
-        cmd = { vim.fn.exepath("jdtls") },
+        cmd = {
+          vim.fn.exepath("jdtls"),
+          string.format("--jvm-arg=-javaagent:%s", lombok_jar),
+        },
         full_cmd = function(opts)
           local fname = vim.api.nvim_buf_get_name(0)
           local root_dir = opts.root_dir(fname)
@@ -104,11 +117,18 @@ return {
         dap = { hotcodereplace = "auto", config_overrides = {} },
         dap_main = {},
         test = true,
+        settings = {
+          java = {
+            inlayHints = {
+              parameterNames = {
+                enabled = "all",
+              },
+            },
+          },
+        },
       }
     end,
-    config = function()
-      local opts = LazyVim.opts("nvim-jdtls") or {}
-
+    config = function(_, opts)
       -- Find the extra bundles that should be passed on the jdtls command-line
       -- if nvim-dap is enabled with java debug/test.
       local mason_registry = require("mason-registry")
@@ -144,6 +164,7 @@ return {
           init_options = {
             bundles = bundles,
           },
+          settings = opts.settings,
           -- enable CMP capabilities
           capabilities = LazyVim.has("cmp-nvim-lsp") and require("cmp_nvim_lsp").default_capabilities() or nil,
         }, opts.jdtls)

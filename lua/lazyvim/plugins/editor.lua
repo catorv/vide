@@ -1,12 +1,8 @@
-local have_make = vim.fn.executable("make") == 1
-local have_cmake = vim.fn.executable("cmake") == 1
-
 return {
 
   -- file explorer
   {
     "nvim-neo-tree/neo-tree.nvim",
-    branch = "v3.x",
     cmd = "Neotree",
     keys = {
       {
@@ -63,7 +59,7 @@ return {
       })
     end,
     opts = {
-      sources = { "filesystem", "buffers", "git_status", "document_symbols" },
+      sources = { "filesystem", "buffers", "git_status" },
       open_files_do_not_replace_types = { "terminal", "Trouble", "trouble", "qf", "Outline" },
       filesystem = {
         bind_to_cwd = false,
@@ -77,6 +73,8 @@ return {
       window = {
         width = 30,
         mappings = {
+          ["l"] = "open",
+          ["h"] = "close_node",
           ["<space>"] = "none",
           ["S"] = "split_with_window_picker",
           ["s"] = "vsplit_with_window_picker",
@@ -95,6 +93,7 @@ return {
             end,
             desc = "Open with System Application",
           },
+          ["P"] = { "toggle_preview", config = { use_float = false } },
         },
       },
       default_component_configs = {
@@ -103,6 +102,12 @@ return {
           expander_collapsed = "",
           expander_expanded = "",
           expander_highlight = "NeoTreeExpander",
+        },
+        git_status = {
+          symbols = {
+            unstaged = "󰄱",
+            staged = "󰱒",
+          },
         },
       },
     },
@@ -341,8 +346,8 @@ return {
               ["<a-h>"] = find_files_with_hidden,
               ["<C-Down>"] = actions.cycle_history_next,
               ["<C-Up>"] = actions.cycle_history_prev,
-              -- ["<C-f>"] = actions.preview_scrolling_down,
-              -- ["<C-b>"] = actions.preview_scrolling_up,
+              ["<C-f>"] = actions.preview_scrolling_down,
+              ["<C-b>"] = actions.preview_scrolling_up,
             },
             n = {
               ["q"] = actions.close,
@@ -372,38 +377,6 @@ return {
     },
   },
 
-  -- Flash Telescope config
-  {
-    "nvim-telescope/telescope.nvim",
-    optional = true,
-    opts = function(_, opts)
-      if not LazyVim.has("flash.nvim") then
-        return
-      end
-      local function flash(prompt_bufnr)
-        require("flash").jump({
-          pattern = "^",
-          label = { after = { 0, 0 } },
-          search = {
-            mode = "search",
-            exclude = {
-              function(win)
-                return vim.bo[vim.api.nvim_win_get_buf(win)].filetype ~= "TelescopeResults"
-              end,
-            },
-          },
-          action = function(match)
-            local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
-            picker:set_selection(match.pos[1] - 1)
-          end,
-        })
-      end
-      opts.defaults = vim.tbl_deep_extend("force", opts.defaults or {}, {
-        mappings = { n = { s = flash }, i = { ["<c-s>"] = flash } },
-      })
-    end,
-  },
-
   -- which-key helps you remember key bindings by showing a popup
   -- with the active keybindings of the command you started typing.
   {
@@ -423,7 +396,7 @@ return {
         ["<leader>c"] = { name = "+code" },
         ["<leader>f"] = { name = "+file/find" },
         ["<leader>g"] = { name = "+git" },
-        ["<leader>gh"] = { name = "+hunks" },
+        ["<leader>gh"] = { name = "+hunks", ["_"] = "which_key_ignore" },
         ["<leader>q"] = { name = "+quit/session" },
         ["<leader>s"] = { name = "+search" },
         ["<leader>u"] = { name = "+ui" },
@@ -455,6 +428,13 @@ return {
         -- untracked = { text = "▎" },
         untracked = { text = "┊" },
       },
+      signs_staged = {
+        add = { text = "▎" },
+        change = { text = "▎" },
+        delete = { text = "" },
+        topdelete = { text = "" },
+        changedelete = { text = "▎" },
+      },
       on_attach = function(buffer)
         local gs = package.loaded.gitsigns
 
@@ -463,8 +443,20 @@ return {
         end
 
         -- stylua: ignore start
-        map("n", "]h", function() gs.nav_hunk("next") end, "Next Hunk")
-        map("n", "[h", function() gs.nav_hunk("prev") end, "Prev Hunk")
+        map("n", "]h", function()
+          if vim.wo.diff then
+            vim.cmd.normal({ "]c", bang = true })
+          else
+            gs.nav_hunk("next")
+          end
+        end, "Next Hunk")
+        map("n", "[h", function()
+          if vim.wo.diff then
+            vim.cmd.normal({ "[c", bang = true })
+          else
+            gs.nav_hunk("prev")
+          end
+        end, "Prev Hunk")
         map("n", "]H", function() gs.nav_hunk("last") end, "Last Hunk")
         map("n", "[H", function() gs.nav_hunk("first") end, "First Hunk")
         map({ "n", "v" }, "<leader>ghs", ":Gitsigns stage_hunk<CR>", "Stage Hunk")
@@ -474,6 +466,7 @@ return {
         map("n", "<leader>ghR", gs.reset_buffer, "Reset Buffer")
         map("n", "<leader>ghp", gs.preview_hunk_inline, "Preview Hunk Inline")
         map("n", "<leader>ghb", function() gs.blame_line({ full = true }) end, "Blame Line")
+        map("n", "<leader>ghB", function() gs.blame() end, "Blame Buffer")
         map("n", "<leader>ghd", gs.diffthis, "Diff This")
         map("n", "<leader>ghD", function() gs.diffthis("~") end, "Diff This ~")
         map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "GitSigns Select Hunk")
@@ -484,18 +477,24 @@ return {
   -- better diagnostics list and others
   {
     "folke/trouble.nvim",
-    cmd = { "TroubleToggle", "Trouble" },
-    opts = { use_diagnostic_signs = true },
+    cmd = { "Trouble" },
+    opts = {},
     keys = {
-      { "<leader>xx", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "Document Diagnostics (Trouble)" },
-      { "<leader>xX", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "Workspace Diagnostics (Trouble)" },
-      { "<leader>xL", "<cmd>TroubleToggle loclist<cr>", desc = "Location List (Trouble)" },
-      { "<leader>xQ", "<cmd>TroubleToggle quickfix<cr>", desc = "Quickfix List (Trouble)" },
+      { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics (Trouble)" },
+      { "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
+      { "<leader>cs", "<cmd>Trouble symbols toggle focus=false<cr>", desc = "Symbols (Trouble)" },
+      {
+        "<leader>cS",
+        "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+        desc = "LSP references/definitions/... (Trouble)",
+      },
+      { "<leader>xL", "<cmd>Trouble loclist toggle<cr>", desc = "Location List (Trouble)" },
+      { "<leader>xQ", "<cmd>Trouble qflist toggle<cr>", desc = "Quickfix List (Trouble)" },
       {
         "[q",
         function()
           if require("trouble").is_open() then
-            require("trouble").previous({ skip_groups = true, jump = true })
+            require("trouble").prev({ skip_groups = true, jump = true })
           else
             local ok, err = pcall(vim.cmd.cprev)
             if not ok then
@@ -528,15 +527,28 @@ return {
     "folke/todo-comments.nvim",
     cmd = { "TodoTrouble", "TodoTelescope" },
     event = "LazyFile",
-    config = true,
+    opts = {},
     -- stylua: ignore
     keys = {
       { "]t", function() require("todo-comments").jump_next() end, desc = "Next Todo Comment" },
       { "[t", function() require("todo-comments").jump_prev() end, desc = "Previous Todo Comment" },
-      { "<leader>xt", "<cmd>TodoTrouble<cr>", desc = "Todo (Trouble)" },
-      { "<leader>xT", "<cmd>TodoTrouble keywords=TODO,FIX,FIXME<cr>", desc = "Todo/Fix/Fixme (Trouble)" },
+      { "<leader>xt", "<cmd>Trouble todo toggle<cr>", desc = "Todo (Trouble)" },
+      { "<leader>xT", "<cmd>Trouble todo toggle filter = {tag = {TODO,FIX,FIXME}}<cr>", desc = "Todo/Fix/Fixme (Trouble)" },
       { "<leader>st", "<cmd>TodoTelescope<cr>", desc = "Todo" },
       { "<leader>sT", "<cmd>TodoTelescope keywords=TODO,FIX,FIXME<cr>", desc = "Todo/Fix/Fixme" },
     },
+  },
+
+  {
+    import = "lazyvim.plugins.extras.editor.fzf",
+    enabled = function()
+      return LazyVim.pick.want() == "fzf"
+    end,
+  },
+  {
+    import = "lazyvim.plugins.extras.editor.telescope",
+    enabled = function()
+      return LazyVim.pick.want() == "telescope"
+    end,
   },
 }

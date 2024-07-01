@@ -22,6 +22,7 @@ return {
       { "<c-space>", desc = "Increment Selection" },
       { "<bs>", desc = "Decrement Selection", mode = "x" },
     },
+    opts_extend = { "ensure_installed" },
     ---@type TSConfig
     ---@diagnostic disable-next-line: missing-fields
     opts = {
@@ -41,6 +42,7 @@ return {
         "luap",
         "markdown",
         "markdown_inline",
+        "printf",
         "python",
         "query",
         "regex",
@@ -64,37 +66,33 @@ return {
       textobjects = {
         move = {
           enable = true,
-          goto_next_start = { ["]f"] = "@function.outer", ["]c"] = "@class.outer" },
-          goto_next_end = { ["]F"] = "@function.outer", ["]C"] = "@class.outer" },
-          goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer" },
-          goto_previous_end = { ["[F"] = "@function.outer", ["[C"] = "@class.outer" },
+          goto_next_start = { ["]f"] = "@function.outer", ["]c"] = "@class.outer", ["]a"] = "@parameter.inner" },
+          goto_next_end = { ["]F"] = "@function.outer", ["]C"] = "@class.outer", ["]A"] = "@parameter.inner" },
+          goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer", ["[a"] = "@parameter.inner" },
+          goto_previous_end = { ["[F"] = "@function.outer", ["[C"] = "@class.outer", ["[A"] = "@parameter.inner" },
         },
       },
     },
     ---@param opts TSConfig
     config = function(_, opts)
       if type(opts.ensure_installed) == "table" then
-        ---@type table<string, boolean>
-        local added = {}
-        opts.ensure_installed = vim.tbl_filter(function(lang)
-          if added[lang] then
-            return false
-          end
-          added[lang] = true
-          return true
-        end, opts.ensure_installed)
+        opts.ensure_installed = LazyVim.dedup(opts.ensure_installed)
       end
       require("nvim-treesitter.configs").setup(opts)
-      vim.schedule(function()
-        require("lazy").load({ plugins = { "nvim-treesitter-textobjects" } })
-      end)
     end,
   },
 
   {
     "nvim-treesitter/nvim-treesitter-textobjects",
-    lazy = true,
+    event = "VeryLazy",
+    enabled = true,
     config = function()
+      -- If treesitter is already loaded, we need to run config again for textobjects
+      if LazyVim.is_loaded("nvim-treesitter") then
+        local opts = LazyVim.opts("nvim-treesitter")
+        require("nvim-treesitter.configs").setup({ textobjects = opts.textobjects })
+      end
+
       -- When in diff mode, we want to use the default
       -- vim text objects c & C instead of the treesitter ones.
       local move = require("nvim-treesitter.textobjects.move") ---@type table<string,fun(...)>

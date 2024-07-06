@@ -1,11 +1,13 @@
-tt.*
-.tests
-doc/tags
-debug
-.repro
-foo.*
 *.log
 data
 
 /starter/lazy-lock.json
 /starter/lazyvim.json
+.repro
+.tests
+build
+debug
+doc/tags
+foo.*
+tt.*
+>>>>>>> upstream/main

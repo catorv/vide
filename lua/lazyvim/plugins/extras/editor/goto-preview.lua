@@ -25,11 +25,13 @@ return {
           end, { silent = true, buffer = bufnr })
         end
       end,
-      -- post_close_hook = function(bufnr)
-      --   -- print("======")
-      --   vim.keymap.del("n", "<C-c>", { silent = true, buffer = bufnr })
-      --   vim.keymap.del("n", "gz", { silent = true, buffer = bufnr })
-      -- end,
+      post_close_hook = function(bufnr)
+        --   -- print("======")
+        vim.keymap.del("n", "<C-c>", { silent = true, buffer = bufnr })
+        if Util.has("zen-mode.nvim") then
+          vim.keymap.del("n", "gz", { silent = true, buffer = bufnr })
+        end
+      end,
     },
   },
 }

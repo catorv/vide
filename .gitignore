@@ -1,13 +1,12 @@
-*.log
-data
-
 /starter/lazy-lock.json
 /starter/lazyvim.json
-.repro
-.tests
-build
-debug
-doc/tags
+
+*.log
+/.repro
+/.tests
+/build
+/debug
+/doc/tags
 foo.*
+node_modules
 tt.*
->>>>>>> upstream/main

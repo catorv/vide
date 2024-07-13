@@ -8,8 +8,11 @@ return {
       height = 50,
       -- border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
       -- border = { "▄", "▄", "▄", "█", "▀", "▀", "▀", "█" },
+      -- border = { "█", "█", "█", "▐", "▟", "▄", "▙", "▌" },
+      -- border = "rounded",
+      -- border = { "█", "█", "█", "▕", "▔", "▔", "▔", "▏" },
       border = { "", " ", "", "", "", "", "", "" },
-      opacity = 10,
+      -- opacity = 10,
       default_mappings = true,
       preview_window_title = { enable = true, position = "center" },
       post_open_hook = function(bufnr, winnr)

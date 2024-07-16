@@ -60,48 +60,59 @@ function M.ai_buffer(ai_type)
 end
 
 -- register all text objects with which-key
-function M.ai_whichkey()
+---@param opts table
+function M.ai_whichkey(opts)
   local objects = {
     { " ", desc = "whitespace" },
-    { '"', desc = 'balanced "' },
-    { "'", desc = "balanced '" },
-    { "(", desc = "balanced (" },
-    { ")", desc = "balanced ) including white-space" },
-    { "<", desc = "balanced <" },
-    { ">", desc = "balanced > including white-space" },
+    { '"', desc = '" string' },
+    { "'", desc = "' string" },
+    { "(", desc = "() block" },
+    { ")", desc = "() block with ws" },
+    { "<", desc = "<> block" },
+    { ">", desc = "<> block with ws" },
     { "?", desc = "user prompt" },
-    { "U", desc = "use/call without dot in name" },
-    { "[", desc = "balanced [" },
-    { "]", desc = "balanced ] including white-space" },
+    { "U", desc = "use/call without dot" },
+    { "[", desc = "[] block" },
+    { "]", desc = "[] block with ws" },
     { "_", desc = "underscore" },
-    { "`", desc = "balanced `" },
+    { "`", desc = "` string" },
     { "a", desc = "argument" },
-    { "b", desc = "balanced )]}" },
+    { "b", desc = ")]} block" },
     { "c", desc = "class" },
     { "d", desc = "digit(s)" },
-    { "e", desc = "word in CamelCase & snake_case" },
+    { "e", desc = "CamelCase / snake_case" },
     { "f", desc = "function" },
     { "g", desc = "entire file" },
     { "i", desc = "indent" },
     { "o", desc = "block, conditional, loop" },
     { "q", desc = "quote `\"'" },
     { "t", desc = "tag" },
-    { "u", desc = "use/call function & method" },
-    { "{", desc = "balanced {" },
-    { "}", desc = "balanced } including white-space" },
+    { "u", desc = "use/call" },
+    { "{", desc = "{} block" },
+    { "}", desc = "{} with ws" },
   }
 
   local ret = { mode = { "o", "x" } }
-  for prefix, name in pairs({
-    i = "inside",
-    a = "around",
-    il = "last",
-    ["in"] = "next",
-    al = "last",
-    an = "next",
-  }) do
+  ---@type table<string, string>
+  local mappings = vim.tbl_extend("force", {}, {
+    around = "a",
+    inside = "i",
+    around_next = "an",
+    inside_next = "in",
+    around_last = "al",
+    inside_last = "il",
+  }, opts.mappings or {})
+  mappings.goto_left = nil
+  mappings.goto_right = nil
+
+  for name, prefix in pairs(mappings) do
+    name = name:gsub("^around_", ""):gsub("^inside_", "")
     ret[#ret + 1] = { prefix, group = name }
     for _, obj in ipairs(objects) do
+      local desc = obj.desc
+      if prefix:sub(1, 1) == "i" then
+        desc = desc:gsub(" with ws", "")
+      end
       ret[#ret + 1] = { prefix .. obj[1], desc = obj.desc }
     end
   end
@@ -110,6 +121,15 @@ end
 
 ---@param opts {skip_next: string, skip_ts: string[], skip_unbalanced: boolean, markdown: boolean}
 function M.pairs(opts)
+  LazyVim.toggle.map("<leader>up", {
+    name = "Mini Pairs",
+    get = function()
+      return not vim.g.minipairs_disable
+    end,
+    set = function(state)
+      vim.g.minipairs_disable = not state
+    end,
+  })
   local pairs = require("mini.pairs")
   pairs.setup(opts)
   local open = pairs.open

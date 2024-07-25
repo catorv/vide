@@ -7,7 +7,7 @@ local map = vim.keymap.set
 
 map("i", "jk", "<ESC>", { silent = true })
 
-map({ "i", "x", "n", "s" }, "<D-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
+map({ "i", "v", "n" }, "<D-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
 
 map({ "i", "c" }, "<C-a>", "<Home>", { desc = "Start of line" })
 map("i", "<C-e>", "<End>", { desc = "End of line" })
@@ -23,9 +23,13 @@ end
 map("n", "<F12>", lazyterm, { desc = "Terminal (root dir)" })
 map("t", "<F12>", "<cmd>close<cr>", { desc = "which_key_ignore" })
 
-map("n", "<f2>", vim.lsp.buf.rename, { desc = "Rename" })
-map("n", "<f4>", "<cmd>lua require('goto-preview').goto_preview_definition()<CR>", { desc = "Code Action" })
-map("n", "<leader>;", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
+map("n", "<F2>", vim.lsp.buf.rename, { desc = "Rename" })
+map("n", "<F3>", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
+map("n", "<F4>", require("goto-preview").goto_preview_definition, { desc = "Preview definition" })
+map({ "n", "v" }, "<A-CR>", vim.lsp.buf.code_action, { desc = "Code Action" })
+
+map("n", "<A-c>", "<cmd>normal gcc<CR>", { desc = "Toggle comment line" })
+map("v", "<A-c>", "<cmd>normal gc<CR>", { desc = "Toggle comment line" })
 
 map({ "n", "v" }, "=0", function()
   Util.format({ force = true })

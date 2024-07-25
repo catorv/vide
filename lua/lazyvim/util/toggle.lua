@@ -12,9 +12,15 @@ local M = {}
 ---@param toggle lazyvim.Toggle
 function M.wrap(toggle)
   return setmetatable(toggle, {
-    __call = function(t)
-      t.set(not t.get())
-      return t.get()
+    __call = function()
+      toggle.set(not toggle.get())
+      local state = toggle.get()
+      if state then
+        LazyVim.info("Enabled " .. toggle.name, { title = toggle.name })
+      else
+        LazyVim.warn("Disabled " .. toggle.name, { title = toggle.name })
+      end
+      return state
     end,
   }) --[[@as lazyvim.Toggle.wrap]]
 end
@@ -24,11 +30,7 @@ end
 function M.map(lhs, toggle)
   local t = M.wrap(toggle)
   LazyVim.safe_keymap_set("n", lhs, function()
-    if t() then
-      LazyVim.info("Enabled " .. toggle.name, { title = toggle.name })
-    else
-      LazyVim.warn("Disabled " .. toggle.name, { title = toggle.name })
-    end
+    t()
   end, { desc = "Toggle " .. toggle.name })
   M.wk(lhs, toggle)
 end
@@ -37,14 +39,21 @@ function M.wk(lhs, toggle)
   if not LazyVim.has("which-key.nvim") then
     return
   end
+  local function safe_get()
+    local ok, enabled = pcall(toggle.get)
+    if not ok then
+      LazyVim.error({ "Failed to get toggle state for **" .. toggle.name .. "**:\n", enabled }, { once = true })
+    end
+    return enabled
+  end
   require("which-key").add({
     {
       lhs,
       icon = function()
-        return toggle.get() and { icon = " ", color = "green" } or { icon = " ", color = "yellow" }
+        return safe_get() and { icon = " ", color = "green" } or { icon = " ", color = "yellow" }
       end,
       desc = function()
-        return (toggle.get() and "Disable " or "Enable ") .. toggle.name
+        return (safe_get() and "Disable " or "Enable ") .. toggle.name
       end,
     },
   })

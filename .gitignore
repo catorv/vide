@@ -1,5 +1,8 @@
 /starter/lazy-lock.json
 /starter/lazyvim.json
+/rust/target
+/lua/*.so
+/lua/*.dll
 
 *.log
 /.repro

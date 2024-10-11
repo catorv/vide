@@ -1,31 +1,4 @@
 return {
-  --
-  -- add gruvbox
-  {
-    "ellisonleao/gruvbox.nvim",
-    lazy = true,
-    opts = {
-      italic = {
-        strings = false,
-      },
-      overrides = {
-        ColorColumn = { bg = "#2E2E2E" },
-        -- IblIndent = { fg = "#2E2E2E" },
-        IblIndent = { fg = "#404040" },
-        MiniIndentscopeSymbol = { fg = "#666666" },
-        NeoTreeNormal = { fg = "#ebdbb2", bg = "#2C2825" },
-        NeoTreeNormalNC = { fg = "#ebdbb2", bg = "#2C2825" },
-        NeoTreeCursorLine = { bg = "#0C0F10" },
-        BufferLineBufferVisible = { fg = "#d5c4a1", bg = "#242424" },
-        BufferLineHintVisible = { fg = "#d5c4a1", bg = "#242424" },
-        BufferLineInfoVisible = { fg = "#d5c4a1", bg = "#242424" },
-        BufferLineWarningVisible = { fg = "#d5c4a1", bg = "#242424" },
-        BufferLineErrorVisible = { fg = "#d5c4a1", bg = "#242424" },
-        BufferLineTabSelected = { fg = "#fabd2f", bg = "#242424" },
-      },
-    },
-  },
-
   -- tokyonight
   {
     "folke/tokyonight.nvim",

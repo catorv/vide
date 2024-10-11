@@ -1,0 +1,8 @@
+#!/bin/bash
+
+target=$(rustc -Vv | grep host | cut -f2 -d' ')
+
+cd rust
+cargo build -p vide $*
+cp -f target/debug/libvide.dylib ../lua/vide_${target//-/_}.so
+echo target: vide_${target//-/_}.so

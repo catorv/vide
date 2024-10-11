@@ -1,3 +1,5 @@
+local start = vim.uv.hrtime()
+
 if vim.version().minor < 10 then
   vim.notify_once("vide: you must use neovim 0.10 or higher")
   return
@@ -66,3 +68,5 @@ if target then
     vide.api.init()
   end
 end
+
+vim.g.vide_startuptime = vim.uv.hrtime() - start

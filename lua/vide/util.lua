@@ -27,12 +27,11 @@ function M.uname()
   ---@type UnameInfo
   ---@diagnostic disable-next-line: assign-type-mismatch
   local result = vim.uv.os_uname()
-  local name = string.sub(result.sysname, 1, 5)
-  if name == "Darwi" then -- Darwin
+  if result.sysname == "Darwin" then
     result.os = "macos"
-  elseif name == "Linux" then
+  elseif result.sysname == "Linux" then
     result.os = "linux"
-  elseif name == "Windo" then -- Windows*
+  elseif result.sysname:find("Windows") ~= nil then
     result.os = "windows"
   else
     result.os = "unknown"

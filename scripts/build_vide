@@ -1,8 +1,33 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+basepath=$(
+  cd $(dirname $0)
+  cd ..
+  pwd
+)
+cd "${basepath}/rust"
 
 target=$(rustc -Vv | grep host | cut -f2 -d' ')
 
-cd rust
-cargo build -p vide $*
-cp -f target/debug/libvide.dylib ../lua/vide_${target//-/_}.so
-echo target: vide_${target//-/_}.so
+if cargo build -p vide $*; then
+  if [ "$(uname)" == "Darwin" ]; then # macOS
+    source="target/debug/libvide.dylib"
+    target="../lua/vide_${target//-/_}.so"
+  elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then # GNU/Linux
+    source="target/debug/libvide.so"
+    target="../lua/vide_${target//-/_}.so"
+  else # Windows
+    source="target/debug/vide.dll"
+    target="../lua/vide_${target//-/_}.dll"
+  fi
+
+  if [ -f "${target}" ]; then
+    rm -f "${target}"
+  fi
+  cp "${source}" "${target}"
+
+  echo target: ${target}
+else
+  echo 'failed'
+  exit 1
+fi

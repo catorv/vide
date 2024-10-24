@@ -390,11 +390,16 @@ return {
           footer = function()
             local stats = require("lazy").stats()
             local ms = (math.floor(stats.startuptime * 100 + 0.5) / 100)
-            local vide_ms = (math.floor(vim.g.vide_startuptime / 10000 + 0.5) / 100)
-            return {
-              "⚡ Neovim loaded " .. stats.loaded .. "/" .. stats.count .. " plugins in " .. ms .. "ms",
-              "⚡ Vide loaded in " .. vide_ms .. "ms",
-            }
+            local vide_startuptime = vim.g.vide_startuptime
+            if vide_startuptime then
+              local vide_ms = (math.floor(vide_startuptime / 10000 + 0.5) / 100)
+              return {
+                "⚡ Neovim loaded " .. stats.loaded .. "/" .. stats.count .. " plugins in " .. ms .. "ms",
+                "⚡ Vide loaded in " .. vide_ms .. "ms",
+              }
+            else
+              return { "⚡ Neovim loaded " .. stats.loaded .. "/" .. stats.count .. " plugins in " .. ms .. "ms" }
+            end
           end,
         },
       }

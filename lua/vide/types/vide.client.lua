@@ -1,0 +1,4 @@
+---@class VideClient
+---@field columns fun():integer 获取客户端总字符宽度
+---@field lines fun():integer 获取客户端总字符高度
+---@field size fun():UISize 获取客户端大小（字符）

@@ -1,0 +1,3 @@
+---@class UISize
+---@field columns integer
+---@field lines integer

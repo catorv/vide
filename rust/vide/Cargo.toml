@@ -11,3 +11,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 nvim-oxi = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }

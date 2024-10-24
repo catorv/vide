@@ -49,23 +49,21 @@ elseif uname.os == "linux" then
     target = "x86_64_unknown_linux_gnu"
   elseif uname.machine == "arm64" or uname.machine == "aarch64" then
     target = "aarch64_unknown_linux_gnu"
-  elseif uname.machine == "i686" then
-    target = "i686_unknown_linux_gnu"
   end
 elseif uname.os == "windows" then
   if uname.machine == "x86_64" then
     target = "x86_64_pc_windows_msvc"
   elseif uname.machine == "arm64" or uname.machine == "aarch64" then
     target = "aarch64_pc_windows_msvc"
-  elseif uname.machine == "i686" then
-    target = "i686_pc_windows_msvc"
   end
 end
 if target then
   local ok, mod = pcall(require, "vide_" .. target)
   if ok then
-    vide.api = mod
-    vide.api.init()
+    for k, v in pairs(mod) do
+      vide[k] = v
+    end
+    vide.init()
   end
 end
 

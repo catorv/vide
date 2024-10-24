@@ -1,16 +1,28 @@
-use nvim_oxi::{api, Dictionary, Function, Object};
+use nvim_oxi::{api, Dictionary, Function};
+use util::async_runtime;
+
+mod client;
+mod dev;
+mod marcos;
+mod types;
+mod ui;
+mod util;
 
 fn vide() -> Dictionary {
-  // let version = Function::from_fn(|()| env!("CARGO_PKG_VERSION").to_owned());
+  async_runtime::init();
 
   let init = Function::from_fn(|()| {
+    #[cfg(debug_assertions)]
+    dev::run();
+
     api::set_var("vide", env!("CARGO_PKG_VERSION").to_owned()).unwrap();
   });
 
-  Dictionary::from_iter([
-    // ("version", Object::from(version)),
-    ("init", Object::from(init)),
-  ])
+  dict!(
+    init   => init,
+    client => client::exports(),
+    cursor => ui::cursor::exports(),
+  )
 }
 
 // see: https://doc.rust-lang.org/beta/rustc/platform-support.html

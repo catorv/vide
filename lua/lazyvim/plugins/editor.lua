@@ -76,8 +76,8 @@ return {
           ["l"] = "open",
           ["h"] = "close_node",
           ["<space>"] = "none",
-          ["S"] = "split_with_window_picker",
-          ["s"] = "vsplit_with_window_picker",
+          ["s"] = "split_with_window_picker",
+          ["v"] = "vsplit_with_window_picker",
           ["<Tab>"] = { "toggle_preview", config = { use_float = true, use_image_nvim = true } },
           ["Y"] = {
             function(state)

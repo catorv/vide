@@ -8,14 +8,15 @@ local map = vim.keymap.set
 map("i", "jk", "<ESC>", { silent = true })
 
 map({ "i", "v", "n" }, "<D-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
+map({ "i", "v", "n" }, "<A-q>", "<cmd>qa<cr>", { desc = "Quit All" })
 
 map({ "i", "c" }, "<C-a>", "<Home>", { desc = "Start of line" })
 map("i", "<C-e>", "<End>", { desc = "End of line" })
 
-map("n", "<S-Left>", "20zh")
-map("n", "<S-Right>", "20zl")
-map("n", "<S-Down>", "6<C-e>")
-map("n", "<S-Up>", "6<C-y>")
+map("n", "<S-Left>", "20zh", { desc = "Quick Move Left" })
+map("n", "<S-Right>", "20zl", { desc = "Quick Move Right" })
+map("n", "<S-Down>", "6<C-e>", { desc = "Quick Move Down" })
+map("n", "<S-Up>", "6<C-y>", { desc = "Quick Move Up" })
 
 local lazyterm = function()
   Util.terminal(nil, { cwd = Util.root() })

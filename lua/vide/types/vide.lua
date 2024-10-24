@@ -1,6 +1,7 @@
 ---@class Vide
 ---@field util VideUtil
----@field api VideApi
+---@field init fun()
+---@field client VideClient
 
 ---@class LazyModuleOptions
 ---@field prefix string 模块前缀(不包含最后一个".")

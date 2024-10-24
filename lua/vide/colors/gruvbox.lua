@@ -779,7 +779,7 @@ local function build_hls(c, p)
     MasonMuted = { fg = p.fg4 },
     MasonMutedBlock = { fg = p.bg0, bg = p.fg4 },
     MasonMutedBlockBold = { fg = p.bg0, bg = p.fg4, bold = true },
-    LspInlayHint = { link = "comment" },
+    LspInlayHint = { link = "Comment" },
     CarbonFile = { link = "GruvboxFg1" },
     CarbonExe = { link = "GruvboxYellow" },
     CarbonSymlink = { link = "GruvboxAqua" },
